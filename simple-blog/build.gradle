@@ -1,0 +1,93 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.3'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'io.github.bluething.playground.spring.boot'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+bootJar {
+    enabled = true
+}
+
+jar {
+    enabled = true
+}
+
+sourceSets {
+    integration {
+        java.srcDir file('src/test/integration/java')
+        resources.srcDir file('src/test/integration/resources')
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+    unit {
+        java.srcDir file('src/test/unit/java')
+        resources.srcDir file('src/test/unit/resources')
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    integrationImplementation.extendsFrom testImplementation
+    componentImplementation.extendsFrom testImplementation
+    unitImplementation.extendsFrom testImplementation
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    unitImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    integrationImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+/**
+ * Integration Test
+ */
+tasks.register('integration', Test) {
+    testClassesDirs = sourceSets.integration.output.classesDirs
+    classpath = sourceSets.integration.runtimeClasspath
+    useJUnitPlatform()
+}
+
+/**
+ * Unit Test
+ * when run, run unit test
+ * result generated, build
+ */
+tasks.register('unit', Test) {
+    testClassesDirs = sourceSets.unit.output.classesDirs
+    classpath = sourceSets.unit.runtimeClasspath
+    useJUnitPlatform()
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
